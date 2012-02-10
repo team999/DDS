@@ -74,6 +74,9 @@ DDS::DDS(double startfreq=1000)
   SetDDSTimers(1);
   SetFreq(startfreq);
   
+  //activate outputs on D11
+  pinMode(11, OUTPUT); 
+  
 	
 }
 
