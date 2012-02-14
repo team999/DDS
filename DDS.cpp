@@ -45,12 +45,13 @@ PROGMEM  prog_uchar sine256[]  = {
 
 //double dfreq;
 // const double refclk=31372.549;  // =16MHz / 510
-const double refclk=31376.6;      // measured
+//scope measurement 31.39717425
+const double refclk=31397.2;      // measured
 
 // variables used inside interrupt service declared as volatile
 volatile byte icnt;              // var inside interrupt
 volatile byte icnt1;             // var inside interrupt
-extern volatile unsigned long c4ms;              // counter incremented all 4ms
+extern volatile unsigned long c4ms=0;              // counter incremented all 4ms
 volatile unsigned long phaccu;   // phase accumulator
 volatile unsigned long tword_m;  // dds tuning word m 
 
