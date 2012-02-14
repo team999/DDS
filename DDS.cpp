@@ -50,14 +50,33 @@ const double refclk=31376.6;      // measured
 // variables used inside interrupt service declared as volatile
 volatile byte icnt;              // var inside interrupt
 volatile byte icnt1;             // var inside interrupt
-volatile unsigned long c4ms;              // counter incremented all 4ms
+extern volatile unsigned long c4ms;              // counter incremented all 4ms
 volatile unsigned long phaccu;   // phase accumulator
-volatile unsigned long tword_m;  // dds tuning word m
+volatile unsigned long tword_m;  // dds tuning word m 
 
-DDS::DDS(double startfreq=1000)
+DDS::DDS()
 {
 	
-  // Timer2 Clock Prescaler to : 1
+
+  
+  //set timers and interupt 
+  //SetDDSTimers(1);
+  //SetFreq(startfreq);
+  
+  //activate outputs on D11
+  pinMode(11, OUTPUT); 
+  pinMode(7,OUTPUT);
+	
+}
+
+void DDS::SetFreq(double inputfreq)
+{
+	tword_m=pow(2,32)*inputfreq/refclk;  // calulate DDS new tuning word 
+	
+}
+
+void DDS::initTimers(){
+   // Timer2 Clock Prescaler to : 1
   enableT (TCCR2B, CS20);
   disableT (TCCR2B, CS21);
   disableT (TCCR2B, CS22);
@@ -69,23 +88,7 @@ DDS::DDS(double startfreq=1000)
   enableT (TCCR2A, WGM20);  // Mode 1  / Phase Correct PWM
   disableT (TCCR2A, WGM21);
   disableT (TCCR2B, WGM22);
-  
-  //set timers and interupt 
-  SetDDSTimers(1);
-  SetFreq(startfreq);
-  
-  //activate outputs on D11
-  pinMode(11, OUTPUT); 
-  
-	
 }
-
-void DDS::SetFreq(double inputfreq)
-{
-	tword_m=pow(2,32)*inputfreq/refclk;  // calulate DDS new tuning word 
-	
-}
-
 
 void DDS::SetDDSTimers(byte enableCom){
   if(enableCom==1){
@@ -95,6 +98,8 @@ void DDS::SetDDSTimers(byte enableCom){
   else{
     disableT(TIMSK2,TOIE2); //disable Timer2 Interupt, stops DDS.
     enableT (TIMSK0,TOIE0); //renable Timer0, delay now worls again
+    //test=5;
+    //Serial.println(test,DEC);
   }
 }
 
@@ -106,17 +111,19 @@ void DDS::SetDDSTimers(byte enableCom){
 // runtime : 8 microseconds ( inclusive push and pop)
 ISR(TIMER2_OVF_vect) {
 
-  //sbi(PORTD,7);          // Test / set PORTD,7 high to observe timing with a oscope
+  enableT(PORTD,7);          // Test / set PORTD,7 high to observe timing with a oscope
 
   phaccu=phaccu+tword_m; // soft DDS, phase accu with 32 bits
   icnt=phaccu >> 24;     // use upper 8 bits for phase accu as frequency information
                          // read value fron ROM sine table and send to PWM DAC
   OCR2A=pgm_read_byte_near(sine256 + icnt);    
-
+  
+  //icnt1=icnt1+1;
+  
   if(icnt1++ >= 125) {  // increment variable c4ms all 4 milliseconds
     c4ms+=4;
     icnt1=0;
    }  
  
- //cbi(PORTD,7);            // reset PORTD,7
+ disableT(PORTD,7);            // reset PORTD,7
 }

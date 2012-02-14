@@ -35,9 +35,12 @@
 class DDS
 {
 	public:
-		DDS(double startfreq);
+		DDS();
+		void initTimers();
 		void SetDDSTimers(byte enableCom);
 		void SetFreq(double inputfreq);
-		volatile unsigned long c4ms; 
+		//volatile unsigned long c4ms; 
+		volatile byte icnt1;
+		volatile byte test; 
 };
 #endif

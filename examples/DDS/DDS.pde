@@ -25,16 +25,20 @@
 // Academy of Media Arts Cologne
 
 #include <DDS.h>
-
-DDS myDDS(1500);
-
+extern volatile unsigned long c4ms;  //kinda gross.  increments every 4ms while DDSTimers are on
+DDS myDDS;
 void setup()
 {
-  myDDS.SetFreq(1500); //get the frequncy from the DominoEX object
-    
+  myDDS.initTimers();
+  myDDS.SetFreq(1500); //set Freq
+  myDDS.SetDDSTimers(1); //start the timers 
+  Serial.begin(38400);
 }
 void loop()
 {
-  //do nothing
- 
+  myDDS.SetDDSTimers(0); //disable DDS and reenable timer0
+  Serial.println(c4ms,DEC);
+  
+  //Do timer related stuff (delay, millis() etc)
+  myDDS.SetDDSTimers(1); //enable DDS whcih disables Timer0 to prevent jitter
  }
