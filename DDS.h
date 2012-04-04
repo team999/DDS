@@ -32,6 +32,8 @@
 #include "WProgram.h"
 #include <avr/pgmspace.h>
 
+#define MAXRANDOM 65536
+
 class DDS
 {
 	public:
@@ -39,8 +41,10 @@ class DDS
 		void initTimers();
 		void SetDDSTimers(byte enableCom);
 		void SetFreq(double inputfreq);
+		void ReRand(void);
 		//volatile unsigned long c4ms; 
 		volatile byte icnt1;
 		volatile byte test; 
+
 };
 #endif
