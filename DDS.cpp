@@ -44,6 +44,7 @@
 //scope measurement 31.39717425
 const double refclk=31397.2;      // measured
 
+volatile int tempword;
 // variables used inside interrupt service declared as volatile
 volatile int icnt;              // var inside interrupt
 volatile byte icnt1;             // var inside interrupt
@@ -67,7 +68,7 @@ DDS::DDS()
   //SetFreq(startfreq);
   
   //activate outputs on D11
-  pinMode(11, OUTPUT); 
+  pinMode(10, OUTPUT); 
   pinMode(7,OUTPUT);
   ddsrand=random(MAXRANDOM);
   randloc=0;
@@ -86,27 +87,43 @@ void DDS::ReRand(){
 }
 
 void DDS::initTimers(){
-   // Timer2 Clock Prescaler to : 1
-  enableT (TCCR2B, CS20);
-  disableT (TCCR2B, CS21);
-  disableT (TCCR2B, CS22);
-
-  // Timer2 PWM Mode set to Phase Correct PWM
-  disableT (TCCR2A, COM2A0);  // clear Compare Match
-  enableT (TCCR2A, COM2A1);
-
-  enableT (TCCR2A, WGM20);  // Mode 1  / Phase Correct PWM
-  disableT (TCCR2A, WGM21);
-  disableT (TCCR2B, WGM22);
+   //~ // Timer2 Clock Prescaler to : 1
+  //~ enableT (TCCR2B, CS20);
+  //~ disableT (TCCR2B, CS21);
+  //~ disableT (TCCR2B, CS22);
+//~ 
+  //~ // Timer2 PWM Mode set to Phase Correct PWM
+  //~ disableT (TCCR2A, COM2A0);  // clear Compare Match
+  //~ enableT (TCCR2A, COM2A1);
+//~ 
+  //~ enableT (TCCR2A, WGM20);  // Mode 1  / Phase Correct PWM
+  //~ disableT (TCCR2A, WGM21);
+  //~ disableT (TCCR2B, WGM22);
+  
+    //Timer1 Clock Prescaler to : 1
+  TCCR1B &= ~(1 << CS12);  //clear cs12
+  TCCR1B  &=  ~(1 << CS11);  //clear cs11
+  TCCR1B |= (1 << CS10);   //set cs10
+  
+  //set compare match to non-inverted HIGH at bottom Low on MATCH
+  disableT(TCCR1A, COM1B0);
+  enableT(TCCR1A,COM1B1);
+  
+	//Timer1 PWM mode Phase Correct PWM 10bit
+	TCCR1B &= ~(1 << WGM13);    // Timer B clear bit 3
+	TCCR1B &= ~ (1 << WGM12);    // set bit 2
+	
+	TCCR1A &= ~(1 << WGM11);    //  Timer A set bit 1
+	TCCR1A |=(1 << WGM10);    //  set bit 0
 }
 
 void DDS::SetDDSTimers(byte enableCom){
   if(enableCom==1){
     disableT (TIMSK0,TOIE0);   // disable Timer0 !!! delay() is now not available
-    enableT (TIMSK2,TOIE2);   // enable Timer2 Interrupt 
+    enableT (TIMSK1,TOIE1);   // enable Timer2 Interrupt 
   }
   else{
-    disableT(TIMSK2,TOIE2); //disable Timer2 Interupt, stops DDS.
+    disableT(TIMSK1,TOIE1); //disable Timer2 Interupt, stops DDS.
     enableT (TIMSK0,TOIE0); //renable Timer0, delay now worls again
     //test=5;
     //Serial.println(test,DEC);
@@ -119,7 +136,7 @@ void DDS::SetDDSTimers(byte enableCom){
 // this is the timebase REFCLOCK for the DDS generator
 // FOUT = (M (REFCLK)) / (2 exp 32)
 // runtime : 8 microseconds ( inclusive push and pop)
-ISR(TIMER2_OVF_vect) {
+ISR(TIMER1_OVF_vect) {
 
   enableT(PORTD,7);          // Test / set PORTD,7 high to observe timing with a oscope
 
@@ -132,7 +149,10 @@ ISR(TIMER2_OVF_vect) {
 	randloc=0;  
   }
   //OCR2A=(pgm_read_byte_near(sine256 + icnt))^ditherbit;    
-  OCR2A=(pgm_read_byte_near(sine256 + icnt));    
+  //OCR1B=(pgm_read_word_near(sine256 + icnt));    
+  tempword=(pgm_read_word_near(sine256 + icnt));    
+  OCR1BH=tempword >> 8;
+  OCR1BL=tempword;
   
   //icnt1=icnt1+1;
   

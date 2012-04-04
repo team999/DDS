@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-freespace=24000*10 #the amount of flash sapce available for the lookuptable
+freespace=24000 #the amount of flash sapce available for the lookuptable
 elementsize=8 #size of each element in the wave table in bits, probabably 8, 16 or 32 bits
 phaccu_len=32
+
+
 
 fileout="wavetable.h"
 fileoutwidth=70  #how far to write the output table before line breaks
@@ -19,11 +21,11 @@ print "wave table length is {} bits.  Phase Accumulator will be truncated by {}\
 
 
 arrayS=2**tablelength
-AoutRes=255 #pwm output res
+AoutRes=2**10 #pwm output res
 halfAout=int(AoutRes/2.)
 x=np.linspace(-np.pi,np.pi,arrayS)
-sinwave=127*(np.cos(x+np.pi/2.))
-sinwave=sinwave+127
+sinwave=halfAout*(np.cos(x+np.pi/2.))
+sinwave=sinwave+halfAout
 sinwaveint=[]
 for i in range(0,len(sinwave)):
 	sinwaveint.append(int(sinwave[i]))
@@ -50,7 +52,7 @@ f=open(fileout,'w')
 f.write("#ifndef wavetable_h\n#define wavetable_h\n")
 f.write("// table of {} sine values of {} bit resolution\n\n".format(tablelength,elementsize))
 f.write("const char truncval = {};\n".format(truncval))
-f.write("PROGMEM  prog_uchar sine256[]  = {\n")
+f.write("PROGMEM  prog_prog_uint16_t sine256[]  = {\n")
 
 
 widthcounter=0
