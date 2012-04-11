@@ -138,7 +138,7 @@ void DDS::SetDDSTimers(byte enableCom){
 // runtime : 8 microseconds ( inclusive push and pop)
 ISR(TIMER1_OVF_vect) {
 
-  enableT(PORTD,7);          // Test / set PORTD,7 high to observe timing with a oscope
+  //enableT(PORTD,7);          // Test / set PORTD,7 high to observe timing with a oscope
 
   phaccu=phaccu+tword_m; // soft DDS, phase accu with 32 bits
   icnt=phaccu >> truncval;     // use upper 8 bits for phase accu as frequency information
@@ -161,5 +161,5 @@ ISR(TIMER1_OVF_vect) {
     icnt1=0;
    }  
  
- disableT(PORTD,7);            // reset PORTD,7
+// disableT(PORTD,7);            // reset PORTD,7
 }

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-freespace=24000 #the amount of flash sapce available for the lookuptable
+freespace=24000*4 #the amount of flash sapce available for the lookuptable
 elementsize=8 #size of each element in the wave table in bits, probabably 8, 16 or 32 bits
 phaccu_len=32
 
@@ -52,7 +52,7 @@ f=open(fileout,'w')
 f.write("#ifndef wavetable_h\n#define wavetable_h\n")
 f.write("// table of {} sine values of {} bit resolution\n\n".format(tablelength,elementsize))
 f.write("const char truncval = {};\n".format(truncval))
-f.write("PROGMEM  prog_prog_uint16_t sine256[]  = {\n")
+f.write("PROGMEM  prog_uint16_t sine256[]  = {\n")
 
 
 widthcounter=0
